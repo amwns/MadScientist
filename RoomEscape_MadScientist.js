@@ -11,6 +11,237 @@
  * 프로그램 상에서는 두 개는 서로 다른 객체이지만, 사람 머리로 생각할 때는 같은 문인 것처럼요!
  */
 
+
+
+
+
+
+
+//프로토타입 대신에 member 사용
+Function.prototype.member = function(name, value){
+	this.prototype[name] = value
+}
+
+//----------------------------------------Game Definition--------------------------------
+function Game(){}
+Game.start = function(room, welcome){
+	game.start(room.id)
+	printMessage(welcome)
+}
+Game.end = function(){
+	game.clear()
+}
+Game.move = function(room){
+	game.move(room.id)	
+}
+
+Game.handItem = function(){
+	return game.getHandItem()
+}
+
+//---------------------------------------Room Definition--------------------------------------
+//room 생성
+function Room(name, background){
+	this.name = name
+	this.background = background
+	this.id = game.createRoom(name, background)  //room1, room2, room3
+}
+
+//불 밝기
+Room.member('setRoomLight', function(intensity){  
+	this.id.setRoomLight(intensity)
+})
+
+
+//-------------------------------------Object Definition-------------------------------------
+//object 생성
+function Object(room, name, image){
+	this.room = room
+	this.name = name
+	this.image = image
+	
+	if (room !== undefined){
+		this.id = room.id.createObject(name, image)  //object
+	}
+}
+
+//status - 열림, 닫힘, 잠김
+Object.STATUS = { OPENED: 0, CLOSED: 1, LOCKED: 2 }  
+
+
+//setSprite - 이미지 변화
+Object.member('setSprite', function(image){
+	this.image = image
+	this.id.setSprite(image)
+})
+
+//resize - 크기
+Object.member('resize', function(width){
+	this.id.setWidth(width)
+})
+
+//setDescription -메세지
+Object.member('setDescription', function(description){
+	this.id.setItemDescription(description)
+})
+//getX
+Object.member('getX', function(){
+	return this.id.getX()
+})
+//getY
+Object.member('getY', function(){
+	return this.id.getY()
+})
+//locate - 배치
+Object.member('locate', function(x, y){
+	this.room.id.locateObject(this.id, x, y)
+})
+
+//moving - 이동
+Object.member('moving', function(x, y){
+	this.id.moveX(x)
+	this.id.moveY(y)
+})
+
+//show - 상태 변화
+Object.member('show', function(){
+	this.id.show()
+})
+//hide
+Object.member('hide', function(){
+	this.id.hide()
+})
+//open
+Object.member('open', function(){
+	this.id.open()
+})
+//close
+Object.member('close', function(){
+	this.id.close()
+})
+//lock
+Object.member('lock', function(){
+	this.id.lock()
+})
+//unlock
+Object.member('unlock', function(){
+	this.id.unlock()
+})
+//isOpened - 상태 출력
+Object.member('isOpened', function(){
+	return this.id.isOpened()
+})
+//isClosed
+Object.member('isClosed', function(){
+	return this.id.isClosed()
+})
+//isLocked
+Object.member('isLocked', function(){
+	return this.id.isLocked()
+})
+//pick - 줍기
+Object.member('pick', function(){
+	this.id.pick()
+})
+//isPicked - 주운 상태
+Object.member('isPicked', function(){
+	return this.id.isPicked()
+})
+
+
+//----------------------------------------Door Definition------------------------------------
+//door 생성
+function Door(room, name, closedImage, openedImage, connectedTo){
+	Object.call(this, room, name, closedImage)  
+
+	// Door properties
+	this.closedImage = closedImage
+	this.openedImage = openedImage
+	this.connectedTo = connectedTo
+}
+
+Door.prototype = new Object()   // inherited from Object (Door << Object)
+
+
+//door의 onClick - 클릭 누르면
+Door.member('onClick', function(){
+	if (!this.id.isLocked() && this.id.isClosed()){
+		this.id.open()
+	}
+	else if (this.id.isOpened()){
+		if (this.connectedTo !== undefined){
+			Game.move(this.connectedTo)
+		}
+		else {
+			Game.end()
+		}
+	}
+	else if(this.id.isLocked()){
+		printMessage("잠김")
+	}
+})
+
+//onOpen  - 열면
+Door.member('onOpen', function(){
+	this.id.setSprite(this.openedImage)
+})
+
+//onClose - 닫으면
+Door.member('onClose', function(){
+	this.id.setSprite(this.closedImage)
+})
+
+//----------------------------------------Keypad Definition-------------------------------------------
+//Keypad 생성
+function Keypad(room, name, image, password, callback){
+	Object.call(this, room, name, image)
+
+	// Keypad properties
+	this.password = password
+	this.callback = callback
+}
+
+Keypad.prototype = new Object()   // inherited from Object
+
+//keypad의 onClick - 클릭하면
+Keypad.member('onClick', function(){
+	showKeypad('number', this.password, this.callback)
+})
+
+//--------------------------------------DoorLock Definition------------------------------------------
+//DoorLock - 키패드의 기능 구현(callback)
+function DoorLock(room, name, image, password, door, message){
+	Keypad.call(this, room, name, image, password, function(){
+		printMessage(message)
+		door.unlock()
+	})
+}
+
+DoorLock.prototype = new Keypad()   // inherited from Keypad
+
+//-------------------------------------- Item Definition ---------------------------------------------
+//Item 생성 - Object 상속받음
+function Item(room, name, image){
+	Object.call(this, room, name, image)
+}
+
+Item.prototype = new Object()   // inherited from Object
+
+//item의 onClick - 줍기
+Item.member('onClick', function(){
+	this.id.pick()
+})
+
+//isHanded - item 사용하기
+Item.member('isHanded', function(){
+	return Game.handItem() == this.id
+})
+
+
+
+
+
+
 /////////////////////////////////////사용자 정의 함수//////////////////////////////////
 
 //-------------------------------------Arrow-----------------------------------------*유빈씨 코드
@@ -43,6 +274,17 @@ function Arrow(room, name, image, direction){
 Arrow.prototype = new Object()   // inherited from Object
 //arrow의 onClick - 클릭하면
 Arrow.member('onClick', function(){})
+
+
+
+
+
+
+
+
+
+
+
 
 /////////////////////////////////시작하는 방(mainRoom)/////////////////////////////////
 
@@ -79,6 +321,9 @@ mainRoom.hole.onClick = function(){ //구멍에만 적용되는 익명 함수
  *최종 스테이지인 방(roomC)의 코드를 마지막에 만들 것 같아서, aisle->roomL(Left)->roomR(Right)->roomC 순서대로 코드를 구성했어요
  */
  
+
+
+
 /////////////////////////////통로///////////////////////////////
 aisle.doorL = aisle.createObject("좌측 문", null)   //통로와 좌측 방 사이에 위치한 문(==doorL, Left Door)
 aisle.doorC = aisle.createObject("중앙 문", null)   //통로와 최종 방 사이에 위치한 문(==doorC, Center Door)
@@ -101,6 +346,9 @@ aisle.doorC.onClick = function() {
 		printMessage("문이 잠겨있다.")
 	}
 }
+
+
+
 
 ////////////////////////////Left Room//////////////////////////////
 roomL_F = game.createRoom("좌측 방", null)
@@ -136,6 +384,9 @@ roomL_R.arrowR.onClick = function(){Game.move(roomL_B)}
 roomL_B.doorL = roomL_B.createObject("좌측 문", null)
 roomL_B.doorL.onClick = function(){game.move(aisle)}
  
+
+
+
 ////////////////////////////Right Room//////////////////////////////
 roomR_F = game.createRoom("우측 방", null)
 roomR_L = game.createRoom("우측 방", null)
@@ -170,6 +421,10 @@ roomR_R.arrowR.onClick = function(){Game.move(roomR_B)}
 roomR_B.doorR = roomR_B.createObject("우측 문", null)
 roomR_B.doorR.onClick = function(){game.move(aisle)}
  
+
+
+
+
 ////////////////////////////Center Room//////////////////////////////
 roomC_F = game.createRoom("중앙 방", null)
 roomC_L = game.createRoom("중앙 방", null)
