@@ -2,8 +2,6 @@
  * 프로젝트명 : 방탈출게임
  * 팀 : Mad Scientist(5조)
  * 구성원 : 김기문, 김민준, 김유빈, 한명지 
- * 
- * 이미지 경로는 일단 null값을 넣어놨어요 - 기문 19.11.20
  * 아시다시피 방과 방 사이에 있는 문은 우리 눈에는 하나지만 프로그램 상에서는 객체가 2개 필요한데,
  * 이 두 오브젝트 사이에 혼동이 없도록 두 객체의 변수 명은 하나로 통일했어요.
  * ex) 통로(aisle)와 우측 방(roomR_F) 사이에 있는 문을 만드는 부분에서, 
@@ -51,7 +49,6 @@ function Room(name, background){
 Room.member('setRoomLight', function(intensity){  
 	this.id.setRoomLight(intensity)
 })
-
 
 //-------------------------------------Object Definition-------------------------------------
 //object 생성
@@ -244,11 +241,8 @@ Item.member('isHanded', function(){
 
 /////////////////////////////////////사용자 정의 함수//////////////////////////////////
 
-//-------------------------------------Arrow-----------------------------------------*유빈씨 코드
-const LEFT = 1
-const UPPER = 2
-const RIGHT = 3
-const BOTTOM = 4
+//-------------------------------------Arrow-----------------------------------------
+//LEFT = 1, UPPER = 2, RIGHT = 3, BOTTOM = 4
 
 function Arrow(room, name, image, direction){
 	Object.call(this, room, name, image)
@@ -257,16 +251,16 @@ function Arrow(room, name, image, direction){
 	this.direction = direction //1: 왼쪽, 2: 위쪽, 3: 오른쪽 4: 아래쪽
     this.resize(40)
     switch (direction){
-        case LEFT:
+        case 1:
             this.locate(40,350);
             break;
-        case RIGHT:
+        case 2:
             this.locate(1230,350);
             break;
-        case UPPER:
+        case 3:
             this.locate(600,40);
             break;
-        case BOTTOM:
+        case 4:
             this.locate(600,680);
             break;
     }
@@ -276,6 +270,95 @@ Arrow.prototype = new Object()   // inherited from Object
 Arrow.member('onClick', function(){})
 
 
+//----------------------------------Drain1--------------------------------
+//이미지 4개가 필요한 배수관
+function Drain1(room, name, image1, image2, image3, image4, answer){
+	Object.call(this, room, name, image1)
+
+	// Drain1 properties
+	this.image1 = image1
+	this.image2 = image2
+	this.image3 = image3
+	this.image4 = image4
+	this.count = 0
+	this.answer = answer
+	this.clear = 0  //정답 맞추면 1, 못 맞추면 0
+}
+Drain1.prototype = new Object()   // inherited from Object
+
+Drain1.member('onClick', function(){
+	//클릭 횟수 카운트
+	if(this.count <= 3){
+		this.count += 1
+	}
+	else if(this.count == 4){
+		this.count = 0   //리셋
+	}
+	//클릭 횟수마다 이미지 변화
+	if(this.count == 0){
+		this.setSprite(this.image1)
+	}
+	else if(this.count == 1){
+		this.setSprite(this.image2)
+	}
+	else if(this.count == 2){
+		this.setSprite(this.image3)
+	}
+	else if(this.count == 3){
+		this.setSprite(this.image4)
+	}
+
+	//특정 클릭 수 -> 한 개 성공
+	if(this.answer != undefined){
+		if(this.count == this.answer){
+			this.clear = 1
+		} 
+		else if(this.count != this.answer) {
+			this.clear = 0
+		}                                             
+	}
+})
+
+//-------------------------------Drain2------------------------------
+//이미지 2개가 필요한 배수관(직선 배수관)
+function Drain2(room, name, image1, image2, answer){
+	Object.call(this, room, name, image1)
+
+	// Drain2 properties
+	this.image1 = image1
+	this.image2 = image2
+	this.count = 0
+	this.answer = answer
+	this.clear = 0  //정답 맞추면 1, 못 맞추면 0
+}
+Drain2.prototype = new Object()   // inherited from Object
+
+Drain2.member('onClick', function(){
+	//클릭 횟수 카운트
+	if(this.count == 1){
+		this.count = 0
+	}
+	else if(this.count == 0){
+		this.count++
+	}
+	//클릭 횟구마다 이미지 변화
+	if(this.count == 0){
+		this.setSprite(this.image1)
+	}
+	else if(this.count == 1){
+		this.setSprite(this.image2)
+	}
+
+	//특정 클릭 수 -> 한 개 성공
+	if(this.answer != undefined){
+		if(this.count == this.answer){
+			this.clear = 1
+		} 
+		else if(this.count != this.answer) {
+			this.clear = 0
+		}                                             
+	}
+})
 
 
 
@@ -285,25 +368,35 @@ Arrow.member('onClick', function(){})
 
 
 
+
+
+
+
+
+
+
+/////////////////////////////방 생성/////////////////////////////
+
+mainRoom = new Room('mainRoom', '배경-1.png') 
+aisle = new Room('aisle', '복도.png')          
+roomR = new Room('roomR', '물리방-1.png')
 
 /////////////////////////////////시작하는 방(mainRoom)/////////////////////////////////
+mainRoom.hammer = new Item(mainRoom, 'hammer', 'hammer.jpg')   //해머 객체 생성
+mainRoom.hammer.resize(50)
+mainRoom.hammer.locate(250,250)
 
-mainRoom = game.createRoom("Main", null) // 방 생성, 2번째 파라미터로 배경 이미지가 들어갑니다.
-aisle = game.createRoom("통로", null)     //복도 생성
-mainRoom.hammer = mainRoom.createObject("해머", null)   //해머 객체 생성
- 
-mainRoom.hole = mainRoom.createObject("Hole", null) //복도로 가기 위한 구멍 생성
-mainRoom.hole.setWidth(100)  //모든 객체의 사이즈는 추후 조정 필요
-mainRoom.lock() //잠금을 기본 상태로
-mainRoom.createObject("Hammer", null)   //해머
- 
-mainRoom.hole.onClick = function(){ //구멍에만 적용되는 익명 함수
+mainRoom.hole = new Object(mainRoom, 'hole', '구멍.png') //복도로 가기 위한 구멍 생성
+mainRoom.hole.resize(100)
+mainRoom.hole.locate(700,500)
+mainRoom.hole.open()    //***실험을 위해 열려진 상태로
+
+
+mainRoom.hole.onClick = function(){ 
     if(mainRoom.hole.isLocked()){
-        if(game.getHandItem() == mainRoom.hammer){  //해머가 손에 있다면!
+        if(Game.handItem() == mainRoom.hammer){  //해머가 손에 있다면!
             printMessage("벽을 부순다.")
-            /*
-                소리나는 효과와 텀을 주는 코드 => 추후 작업 필요
-            */
+			//소리작업
             mainRoom.hole.setSprite(null)   //부순 후 이미지
             mainRoom.hole.unlock()
             mainRoom.hole.open()
@@ -312,45 +405,26 @@ mainRoom.hole.onClick = function(){ //구멍에만 적용되는 익명 함수
             printMessage("균열 사이로 공간이 보인다.")
         }
     }else if(mainRoom.hole.isOpened()){
-        game.move(aisle)
+        Game.move(aisle)
     }
 }
 
+ 
+
+
+
+/////////////////////////////////////////통로///////////////////////////////////////////////
+//aisle.doorL = new Door(aisle, '좌측 문', '문-닫힘-1.png', '문-열림-1.png', roomL)   
+//aisle.doorC = new Door(aisle, '중앙 문', '문-닫힘-1.png', '문-열림-1.png', roomC)   
+aisle.doorR = new Door(aisle, 'doorR', '문-닫힘-1.png', '문-열림-1.png', roomR)
+aisle.doorR.resize(300)
+aisle.doorR.locate(900,400)
+
+ 
+
+
 /*
- *중앙 문으로 이어지는 곳이 최종 스테이지라면, roomC(Center Room)가 최종 탈출 문이 있는 방이 됩니다.
- *최종 스테이지인 방(roomC)의 코드를 마지막에 만들 것 같아서, aisle->roomL(Left)->roomR(Right)->roomC 순서대로 코드를 구성했어요
- */
- 
-
-
-
-/////////////////////////////통로///////////////////////////////
-aisle.doorL = aisle.createObject("좌측 문", null)   //통로와 좌측 방 사이에 위치한 문(==doorL, Left Door)
-aisle.doorC = aisle.createObject("중앙 문", null)   //통로와 최종 방 사이에 위치한 문(==doorC, Center Door)
-aisle.doorR = aisle.createObject("우측 문", null)   //통로와 우측 방 사이에 위치한 문(==doorR, Right Door)
-aisle.hole = aisle.createObject("구멍", null)   //통로와 시작하는 방 사이를 연결하는 구멍(==hole)
-aisle.doorC.lock()  //중앙 문은 잠궈둡니다.
-
-//열렸을 때 문의 이미지를 바꾸고 싶다면 추가 코드(onClick(), setSprite() 등)가 필요해요. -기문 19.11.20
-aisle.doorL.onClick = function(){game.move(roomL_F)}
-aisle.doorR.onClick = function(){game.move(roomR_F)}
-aisle.doorC.onClick = function(){game.move(roomC_F)}
-aisle.hole.onClick = function(){game.move(mainRoom)}
- 
-aisle.doorC.onClick = function() {
-	if(aisle.doorC.isClosed()){ 
-		aisle.doorC.open()
-	} else if (aisle.doorC.isOpened()){ 
-		game.clear()
-	} else if(aisle.doorC.isLocked()){
-		printMessage("문이 잠겨있다.")
-	}
-}
-
-
-
-
-////////////////////////////Left Room//////////////////////////////
+////////////////////////////Left Room(화학실험실)//////////////////////////////
 roomL_F = game.createRoom("좌측 방", null)
 roomL_L = game.createRoom("좌측 방", null)
 roomL_B = game.createRoom("좌측 방", null)
@@ -385,47 +459,99 @@ roomL_B.doorL = roomL_B.createObject("좌측 문", null)
 roomL_B.doorL.onClick = function(){game.move(aisle)}
  
 
-
-
-////////////////////////////Right Room//////////////////////////////
-roomR_F = game.createRoom("우측 방", null)
-roomR_L = game.createRoom("우측 방", null)
-roomR_B = game.createRoom("우측 방", null)
-roomR_R = game.createRoom("우측 방", null)
-
-//오른쪽방(Right) 정면(Front) = R_F
-roomR_F.arrowL = new Arrow(roomR_F, 'Left Arrow', '화살표1.jpg', LEFT)
-roomR_F.arrowR = new Arrow(roomR_F, 'Right Arrow', '화살표3.jpg', RIGHT)
-roomR_F.arrowL.onClick = function(){Game.move(roomR_L)}
-roomR_F.arrowR.onClick = function(){Game.move(roomR_R)}
-
-//오른쪽방(Right) 좌측(Left) = R_L
-roomR_L.arrowL = new Arrow(roomR_L, 'Left Arrow', '화살표1.jpg', LEFT)
-roomR_L.arrowR = new Arrow(roomR_L, 'Right Arrow', '화살표3.jpg', RIGHT)
-roomR_L.arrowL.onClick = function(){Game.move(roomR_B)}
-roomR_L.arrowR.onClick = function(){Game.move(roomR_F)}
-
-//오른쪽방(Right) 후측(Back) = R_B
-roomR_B.arrowL = new Arrow(roomR_B, 'Left Arrow', '화살표1.jpg', LEFT)
-roomR_B.arrowR = new Arrow(roomR_B, 'Right Arrow', '화살표3.jpg', RIGHT)
-roomR_B.arrowL.onClick = function(){Game.move(roomR_R)}
-roomR_B.arrowR.onClick = function(){Game.move(roomR_L)}
-
-//오른쪽방(Right) 우측(Right) = R_R
-roomR_R.arrowL = new Arrow(roomR_R, 'Left Arrow', '화살표1.jpg', LEFT)
-roomR_R.arrowR = new Arrow(roomR_R, 'Right Arrow', '화살표3.jpg', RIGHT)
-roomR_R.arrowL.onClick = function(){Game.move(roomR_F)}
-roomR_R.arrowR.onClick = function(){Game.move(roomR_B)}
-
-//통로와 우측 방 사이에 위치한 문(==doorR)
-roomR_B.doorR = roomR_B.createObject("우측 문", null)
-roomR_B.doorR.onClick = function(){game.move(aisle)}
- 
+*/
 
 
 
 
-////////////////////////////Center Room//////////////////////////////
+////////////////////////////Right Room(물리실험실)//////////////////////////////
+//배수관 클로즈업 방
+drain_close = new Room('drain_close', '물리방-2.png')
+
+//복도로 나가는 화살표
+roomR.arrow = new Door(roomR, 'arrow', '화살표-1.png', '화살표-1.png',aisle)
+roomR.arrow.resize(200)
+roomR.arrow.locate(1150,600)
+
+//배수관 첫화면
+roomR.first_drain = new Object(roomR, 'first_drain', '배수관-첫화면.png')
+roomR.first_drain.resize(300)
+roomR.first_drain.locate(300, 200)
+
+roomR.first_drain.onClick = function(){
+	Game.move(drain_close)
+}
+
+//배수관 문제 풀기 
+drain_close.drain1 = new Drain2(drain_close, 'drain1', '배수관-1-2.png', '배수관-1-1.png', 1)
+drain_close.drain2 = new Drain1(drain_close, 'drain2', '배수관-2-1.png','배수관-2-2.png','배수관-2-3.png','배수관-2-4.png', 1)
+drain_close.drain3 = new Drain1(drain_close, 'drain3', '배수관-2-2.png','배수관-2-4.png','배수관-2-3.png','배수관-2-1.png', 2)
+drain_close.drain4 = new Drain1(drain_close, 'drain4', '배수관-2-3.png','배수관-2-1.png','배수관-2-2.png','배수관-2-4.png', 1)
+drain_close.drain5 = new Drain1(drain_close, 'drain5', '배수관-2-1.png','배수관-2-2.png','배수관-2-3.png','배수관-2-4.png', 3)
+drain_close.drain6 = new Drain2(drain_close, 'drain6', '배수관-1-2.png', '배수관-1-1.png', 1)
+drain_close.drain7 = new Drain1(drain_close, 'drain7', '배수관-4-1.png','배수관-4-2.png','배수관-4-3.png','배수관-4-4.png')
+drain_close.drain8 = new Drain1(drain_close, 'drain8', '배수관-4-3.png','배수관-4-2.png','배수관-4-1.png','배수관-4-4.png')
+drain_close.drain9 = new Drain1(drain_close, 'drain9', '배수관-2-4.png','배수관-2-2.png','배수관-2-3.png','배수관-2-1.png', 3)
+
+drain_close.drain1.resize(100)
+drain_close.drain2.resize(100)
+drain_close.drain3.resize(100)
+drain_close.drain4.resize(100)
+drain_close.drain5.resize(100)
+drain_close.drain6.resize(100)
+drain_close.drain7.resize(100)
+drain_close.drain8.resize(100)
+drain_close.drain9.resize(100)
+
+drain_close.drain1.locate(500,100)
+drain_close.drain2.locate(600,100)
+drain_close.drain3.locate(700,100)
+drain_close.drain4.locate(500,200)
+drain_close.drain5.locate(600,200)
+drain_close.drain6.locate(700,200)
+drain_close.drain7.locate(500,300)
+drain_close.drain8.locate(600,300)
+drain_close.drain9.locate(700,300)
+
+drain_close.box = new Object(drain_close, 'box', '투명상자.png')
+drain_close.box.resize(200)
+drain_close.box.locate(900,480)
+//*****수돗꼭지 돌리면 물 나오게 하기*****/
+drain_close.box.onClick = function(){
+	if(drain_close.drain1.clear == 1 && drain_close.drain2.clear == 1 && drain_close.drain3.clear == 1 && drain_close.drain4.clear == 1 && drain_close.drain5.clear == 1 && drain_close.drain6.clear == 1 && drain_close.drain9.clear == 1){
+		//***물 흘러가는 소리 */
+		drain_close.box.setSprite('물상자.png')
+		drain_close.lever.show()
+	}
+	else{
+		printMessage("손이 닿질 않아서 꺼낼 수가 없다!!!")
+	}
+}
+
+drain_close.pipe = new Object(drain_close, 'pipe', '파이프-1.png')
+drain_close.pipe.resize(200)
+drain_close.pipe.locate(845,335)
+
+drain_close.lever = new Item(drain_close, 'lever', '레버.png')
+drain_close.lever.resize(100)
+drain_close.lever.locate(900, 420)
+drain_close.lever.hide()
+
+//화살표 -> 다시 물리실험실로
+drain_close.arrow = new Object(drain_close, 'arrow', '화살표-2.png')
+drain_close.arrow.resize(200)
+drain_close.arrow.locate(600, 650)
+
+drain_close.arrow.onClick = function(){
+	Game.move(roomR)
+}
+
+//전구
+
+
+
+/*
+////////////////////////////Center Room(비밀의 방)//////////////////////////////
 roomC_F = game.createRoom("중앙 방", null)
 roomC_L = game.createRoom("중앙 방", null)
 roomC_B = game.createRoom("중앙 방", null)
@@ -474,6 +600,8 @@ roomC_F.finalDoor.onClick = function() {
 		printMessage("문이 잠겨있다.")
 	}
 }
+*/
 
-game.start(mainRoom) 
-printMessage("괴짜 과학자에게 잡혔다....    빨리 이곳을 벗어나야 겠어!!!") 
+
+
+Game.start(mainRoom, "괴짜 과학자에게 잡혔다....    빨리 이곳을 벗어나야 겠어!!!") 
