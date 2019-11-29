@@ -377,53 +377,6 @@ Drain2.member('Reset', function(){
 
 
 
-//------------------------Bulb-------------------------
- 
-function Bulb(room, name, image0, image1, image2, image3, image4, num){
-	Object.call(this, room, name, image0)
-
-	// Bulb properties
-	this.image0 = image0
-	this.image1 = image1
-	this.image2 = image2
-	this.image3 = image3
-	this.image4 = image4
-
-	this.num = num  //이미지 배열의 크기
-	this.count = 0  //클릭 횟수 카운트
-}
-Bulb.prototype = new Object()   // inherited from Object
-
-//레버 누를때마다 전구 이미지가 변화하는 함수 (**sleep함수는 렉이 걸림**)
-Bulb.member('Change', function(){
-	if(this.count == 0){
-		this.setSprite(this.image1)
-	}
-	else if(this.count == 1){
-		this.setSprite(this.image2)
-	}
-	else if(this.count == 2){
-		this.setSprite(this.image3)
-	}
-	else if(this.count == 3){
-		this.setSprite(this.image4)
-	}
-
-	if(this.count < this.num){
-		this.count++
-	}
-	else if(this.count >= this.num){
-		this.count = 0   //리셋
-	}
-})
-//리셋 함수
-Bulb.member('Reset', function(){
-	this.count = 0
-	this.setSprite(this.image0)
-})
-
-
-
 
 
 
@@ -525,11 +478,10 @@ roomL_B.doorL.onClick = function(){game.move(aisle)}
 
 
 ////////////////////////////Right Room(물리실험실)//////////////////////////////
-//배수관 클로즈업 방, 전구 클로즈업 방, 금고 클로즈업 방
+//배수관 클로즈업 방, 전구 클로즈
 drain_close = new Room('drain_close', '물리방-2.png')
 light_bulb_close = new Room('light_bulb_close','전구방-1.png')
 nolight_bulb_close = new Room('nolight_bulb_close','전구방-2.png')
-safe_close = new Room('safe_close', '금고방.png')
 
 //복도로 나가는 화살표
 roomR.arrow = new Door(roomR, 'arrow', '화살표-1.png', '화살표-1.png',aisle)
@@ -606,7 +558,7 @@ drain_close.arrow.resize(200)
 drain_close.arrow.locate(600, 650)
 
 drain_close.arrow.onClick = function(){
-	//배수관 게임 리셋(***뺄지 고민중***)
+	//배수관 게임 리셋
 	drain_close.drain1.Reset()
 	drain_close.drain2.Reset()
 	drain_close.drain3.Reset()
@@ -620,8 +572,7 @@ drain_close.arrow.onClick = function(){
 	Game.move(roomR)
 }
 
-
-//전구기계
+//전구기계  ***** for문으로 이미지 변화
 roomR.bulb_mach = new Object(roomR, 'bulb_mach', '전구기계-1.png')
 roomR.bulb_mach.resize(200)
 roomR.bulb_mach.locate(1000, 400)
@@ -633,36 +584,20 @@ roomR.bulb_mach.onClick = function(){
 	}
 	else{
 		printMessage("레버가 없어서 작동이 되지 않는것 같다...")
-		roomR.bulb_mach.setSprite('전구기계-1.png')
 		Game.move(nolight_bulb_close)
 	}
-}
-//전구 켜질 때의 방
-light_bulb_close.bulb = new Bulb(light_bulb_close, 'bulb','전구.png','전구1.png','전구2.png','전구3.png','전구4.png', 4)
-light_bulb_close.bulb.resize(300)
-light_bulb_close.bulb.locate(700, 200)
-
-light_bulb_close.lever = new Object(light_bulb_close, 'lever', '레버.png')
-light_bulb_close.lever.locate(550, 600)
-light_bulb_close.lever.resize(300)
-light_bulb_close.lever.onClick = function(){
-	light_bulb_close.bulb.Change() //전구 이미지 변화
 }
 
 light_bulb_close.arrow = new Object(light_bulb_close, 'arrow', '화살표-2.png')
 light_bulb_close.arrow.resize(200)
-light_bulb_close.arrow.locate(900, 650)
+light_bulb_close.arrow.locate(600, 650)
 light_bulb_close.arrow.onClick = function(){
-	//전구 리셋
-	light_bulb_close.bulb.Reset()
-
 	Game.move(roomR)
 }
 
-//전구 꺼질 때의 방
 nolight_bulb_close.arrow = new Object(nolight_bulb_close, 'arrow', '화살표-2.png')
 nolight_bulb_close.arrow.resize(200)
-nolight_bulb_close.arrow.locate(900, 650)
+nolight_bulb_close.arrow.locate(600, 650)
 nolight_bulb_close.arrow.onClick = function(){
 	Game.move(roomR)
 }
@@ -670,21 +605,6 @@ nolight_bulb_close.arrow.onClick = function(){
 
 
 //사물함
-roomR.safe = new Object(roomR, 'safe', '금고-닫힘.png')
-roomR.safe.resize(200)
-roomR.safe.locate(300, 500)
-
-roomR.safe.onClick = function(){
-	Game.move(safe_close)
-}
-
-//사물함 클로즈업
-safe_close.arrow = new Object(safe_close, 'arrow', '화살표-2.png')
-safe_close.arrow.resize(200)
-safe_close.arrow.locate(650, 650)
-safe_close.arrow.onClick = function(){
-	Game.move(roomR)
-}
 
 
 
