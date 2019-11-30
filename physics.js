@@ -163,7 +163,6 @@ Door.prototype = new Object()   // inherited from Object (Door << Object)
 //door의 onClick - 클릭 누르면
 Door.member('onClick', function(){
 	if (!this.id.isLocked() && this.id.isClosed()){
-		playSound(this.sound)
 		this.id.open()
 	}
 	else if (this.id.isOpened()){
@@ -175,7 +174,7 @@ Door.member('onClick', function(){
 		}
 	}
 	else if(this.id.isLocked()){
-		printMessage("문이 잠겨있다.")
+		printMessage("잠김")
 	}
 })
 
@@ -235,24 +234,7 @@ Item.member('isHanded', function(){
 	return Game.handItem() == this.id
 })
 
-function getItem(room, name, image,sound){
-    Object.call(this, room, name, image)
-    
-    this.sound=sound
-}
 
-getItem.prototype = new Object()   // inherited from Object
-
-//item의 onClick - 줍기
-getItem.member('onClick', function(){
-    playSound(this.sound)
-	this.id.pick()
-})
-
-//isHanded - item 사용하기
-getItem.member('isHanded', function(){
-	return Game.handItem() == this.id
-})
 
 
 
@@ -525,143 +507,29 @@ Safe.member('Reset', function(){
 
 
 
-
-
-
-
-
-
 /////////////////////////////방 생성/////////////////////////////
-mainRoom = new Room('mainRoom', 'mainRoom.png') 
-aisle = new Room('aisle', 'aisle.png')   
-physics = new Room('physics', '물리방-1.png')
-chemistry = new Room('chemistry', 'chemical.png')
-chemistry_uv = new Room('chemistry_uv','chemistry_uv.png')
-chemistry_tray = new Room('chemistry_tray','chemistry_tray.png')
 
+mainRoom = new Room('mainRoom', '배경-1.png') 
+aisle = new Room('aisle', '복도.png')          
+roomR = new Room('roomR', '물리방-1.png')
 
 /////////////////////////////////시작하는 방(mainRoom)/////////////////////////////////
-mainRoom.hammer = new Item(mainRoom, 'hammer', 'hammer.png')   //해머 객체 생성
-mainRoom.hammer.hide()
+mainRoom.hammer = new Item(mainRoom, 'hammer', 'hammer.jpg')   //해머 객체 생성
+mainRoom.hammer.resize(50)
+mainRoom.hammer.locate(250,250)
 
 mainRoom.hole = new Object(mainRoom, 'hole', '구멍.png') //복도로 가기 위한 구멍 생성
 mainRoom.hole.resize(100)
-mainRoom.hole.locate(450,300)
-mainRoom.hole.lock()    //***실험을 위해 열려진 상태로
+mainRoom.hole.locate(700,500)
+mainRoom.hole.open()    //***실험을 위해 열려진 상태로
 
-mainRoom.broom = new getItem(mainRoom, 'broom', 'broom.png', 'stone.wav')
-mainRoom.broom.resize(150)
-mainRoom.broom.locate(280,280)
-
-mainRoom.stick = new Item(mainRoom, 'stick', 'stick.png')
-mainRoom.stick.hide()
-
-mainRoom.brush = new Item(mainRoom, 'brush', 'brush.png')
-mainRoom.brush.hide()
-
-game.makeCombination(mainRoom.stick.id, mainRoom.brush.id, mainRoom.broom.id)
-
-cabinetSide = new Room('cabinetSide','cabinet_back.png')
-mainRoom.cabinet = new Object(mainRoom, 'cabinet', 'cabinet.png')
-mainRoom.cabinet.resize(250)
-mainRoom.cabinet.locate(140,330)
-mainRoom.cabinet.onClick = function(){Game.move(cabinetSide)}
-
-cabinetSide.cabinet2 = new Object(cabinetSide, 'cabinet2', 'cabinet_closed.png')
-cabinetSide.cabinet2.locate(620,360)
-cabinetSide.cabinet2.resize(1280)
-cabinetSide.cabinet2.lock()
-cabinetSide.cabinet2.onClick = function(){
-	if(cabinetSide.cabinet2.isLocked()){
-		showKeypad("number", "2049" , function(){
-			cabinetSide.cabinet2.unlock()
-			printMessage("열리는 소리가 들렸다.")
-		 })
-	}
-	else{
-		cabinetSide.numlock.hide()
-		cabinetSide.cabinet2.setSprite('cabinet_opened.png')
-		cabinetSide.hammerHead.show()
-	}
-}
-
-cabinetSide.hammerHead = new getItem(cabinetSide, 'hammerHead', 'hammerHead.png', 'stone.wav')
-cabinetSide.hammerHead.resize(100)
-cabinetSide.hammerHead.locate(626, 500)
-cabinetSide.hammerHead.hide()
-game.makeCombination(mainRoom.stick.id, cabinetSide.hammerHead.id, mainRoom.hammer.id)
-
-cabinetSide.numlock = new Object(cabinetSide, "numlock", "numlock.png") // 오브젝트 생성
-cabinetSide.numlock.resize(60) // 크기 조절
-cabinetSide.numlock.locate(626, 390) // 위치 변경
-
-cabinetSide.arrow = new Object(cabinetSide, "arrow","화살표-2.png")
-cabinetSide.arrow.resize(200)
-cabinetSide.arrow.locate(640,680)
-cabinetSide.arrow.onClick = function(){
-	cabinetSide.hammerHead.hide()
-	Game.move(mainRoom)
-	cabinetSide.cabinet2.setSprite('cabinet_closed.png')
-	cabinetSide.numlock.show()
-}
-
-desk = new Room('desk', 'desk.png')
-mainRoom.table = new Object(mainRoom, 'table', 'table.png')
-mainRoom.table.resize(400)
-mainRoom.table.locate(1100,450)
-mainRoom.table.onClick = function(){Game.move(desk)}
-
-desk.table = new Object(desk, 'table', 'desk_table.png')
-desk.table.locate(620,360)
-desk.table.resize(1280)
-
-desk.liquid = new getItem(desk, 'liquid', 'liquid.png', 'stone.wav')
-desk.liquid.locate(700, 280)
-desk.liquid.resize(150)
-
-desk.openTable = new Object(desk, 'openTable', 'none.png')
-desk.openTable.close()
-desk.openTable.resize(100)
-desk.openTable.locate(330,480)
-
-desk.openTable.onClick = function(){
-	if (desk.openTable.isClosed()) {
-		desk.openTable.open()
-		desk.table.setSprite('desk_table_opened.png') }
-	else{
-		desk.openTable.close()
-		desk.table.setSprite('desk_table.png') }
-}
-
-desk.arrow = new Object(desk, "arrow","화살표-2.png")
-desk.arrow.resize(200)
-desk.arrow.locate(640,680)
-desk.arrow.onClick = function(){Game.move(mainRoom)}
-
-mainRoom.painted = new Object(mainRoom, 'painted', 'painted.png')
-mainRoom.painted.resize(300)
-mainRoom.painted.locate(700,200)
-mainRoom.painted.lock()
-mainRoom.painted.onClick = function(){ 
-    if(mainRoom.painted.isLocked()){
-        if(game.getHandItem() == desk.liquid.id){
-			mainRoom.painted.setSprite('number.png')
-			mainRoom.painted.locate(660,180)
-        }
-        else{
-            printMessage("일부러 덧칠해놓은 것 같다.")
-        }
-    }else if(mainRoom.hole.isOpened()){
-        Game.move(aisle)
-    }
-}
 
 mainRoom.hole.onClick = function(){ 
     if(mainRoom.hole.isLocked()){
-        if(game.getHandItem() == mainRoom.hammer.id){  //해머가 손에 있다면!
+        if(Game.handItem() == mainRoom.hammer){  //해머가 손에 있다면!
             printMessage("벽을 부순다.")
 			//소리작업
-            //mainRoom.hole.setSprite(null)   //부순 후 이미지
+            mainRoom.hole.setSprite(null)   //부순 후 이미지
             mainRoom.hole.unlock()
             mainRoom.hole.open()
         }
@@ -673,236 +541,62 @@ mainRoom.hole.onClick = function(){
     }
 }
 
-
+ 
 
 
 
 /////////////////////////////////////////통로///////////////////////////////////////////////
-
-aisle.rightdoor = new Door(aisle, 'rightdoor', 'rightdoor.png', 'rightdooropen.png', physics,'door.wav')
-aisle.rightdoor.resize(220)
-aisle.rightdoor.locate(1050, 335)
-
-aisle.middledoor = new Door(aisle, 'middledoor', 'middledoor.png', 'middledooropen.png',room,'door.wav')
-aisle.middledoor.resize(440)
-aisle.middledoor.locate(650, 335)
-
-aisle.leftdoor = new Door(aisle, 'leftdoor', 'leftdoor.png', 'leftdooropen.png',chemistry,'door.wav')
-aisle.leftdoor.resize(220)
-aisle.leftdoor.locate(250, 335)
-
-aisle.chainleft = new Object(aisle, 'chainleft', 'chainleft.png')
-aisle.chainleft.resize(400)
-aisle.chainleft.locate(650,350)
-
-aisle.chainright = new Object(aisle, 'chainright', 'chainright.png')
-aisle.chainright.resize(400)
-aisle.chainright.locate(650,350)
-aisle.chainright.lock()
-
-aisle.chain1 = new Object(aisle, 'chain1', 'chain1.png')
-aisle.chain1.resize(150)
-aisle.chain1.locate(500,560)
-aisle.chain1.hide()
-
-aisle.chain2 = new Object(aisle, 'chain2', 'chain2.png')
-aisle.chain2.resize(150)
-aisle.chain2.locate(830,560)
-aisle.chain2.hide()
-
-
-
-
-/////////////////////////////////////////chemistry///////////////////////////////////////////
-
-chemistry.beaker1 = new getItem(chemistry, 'beaker1', 'beaker1.png','glass.wav')
-chemistry.beaker1.resize(40)
-chemistry.beaker1.locate(800,295)
-
-
-chemistry.beaker2 = new getItem(chemistry, 'beaker2', 'beaker2.png','glass.wav')
-chemistry.beaker2.resize(45)
-chemistry.beaker2.locate(1150,420)
-
-chemistry.beaker3 = new Item(chemistry, 'beaker3', 'beaker3.png')
-chemistry.beaker3.hide()
-
-game.makeCombination(chemistry.beaker1.id,chemistry.beaker2.id,chemistry.beaker3.id)
-
-chemistry.keycast2= new Item(chemistry, 'keycast2', 'keycast2.png')
-chemistry.keycast2.hide()
-
-chemistry.key= new Item(chemistry, 'key', 'key.png')
-chemistry.key.hide()
-
-chemistry.getpaper= new Item(chemistry, 'getpaper', 'getpaper.png')
-chemistry.getpaper.hide()
-
-chemistry.paper = new getItem(chemistry,'paper','paper.png','paper.wav')
-chemistry.paper.resize(130)
-chemistry.paper.locate(350,440)
-
-chemistry.paper.onClick=function(){
-    playSound('paper.wav')
-    chemistry.paper.hide()
-    chemistry.getpaper.pick()
-}
-
-chemistry.uv = new Object(chemistry, 'uv', 'uv.png')
-chemistry.uv.resize(130)
-chemistry.uv.locate(1030,350)
-
-chemistry.uv.onClick=function(){
-	Game.move(chemistry_uv)
-}
-
-chemistry.tray = new Object(chemistry, 'tray', 'tray.png')
-chemistry.tray.resize(160)
-chemistry.tray.locate(120,315)
-
-chemistry.tray.onClick=function(){
-	Game.move(chemistry_tray)
-}
-
-chemistry.safe = new Object(chemistry, 'safe', 'safe.png')
-chemistry.safe.resize(110)
-chemistry.safe.locate(1100,530)
-chemistry.safe.lock()
-
-chemistry.rollingpaper = new Item(chemistry, 'rollingpaper', 'rollingpaper.png')
-chemistry.rollingpaper.resize(35)
-chemistry.rollingpaper.locate(1085,524)
-chemistry.rollingpaper.hide()
-
-chemistry.getrollingpaper = new Item(chemistry, 'getrollingpaper', 'getrollingpaper.png')
-chemistry.getrollingpaper.hide()
-
-chemistry.rollingpaper.onClick=function(){
-	playSound("paper.wav")
-	chemistry.rollingpaper.hide()
-	chemistry.getrollingpaper.pick()
-}
-
-chemistry.keycast = new Item(chemistry, 'keycast', 'keycast.png')
-chemistry.keycast.resize(35)
-chemistry.keycast.locate(1088,505)
-chemistry.keycast.hide()
-
-chemistry.getkeycast = new Item(chemistry, 'getkeycast', 'getkeycast.png')
-chemistry.getkeycast.hide()
-
-chemistry.keycast.onClick=function(){
-	playSound("stone.wav")
-	chemistry.keycast.hide()
-	chemistry.getkeycast.pick()
-}
-
-chemistry.safe.onClick=function(){
-	if(chemistry.safe.isLocked()){
-		playSound("locked.wav")
-		showKeypad("telephone","6429",function(){
-			chemistry.safe.unlock()
-			chemistry.safe.setSprite("safeopen.png")
-			chemistry.keycast.show()
-			chemistry.rollingpaper.show()
-			playSound("safe.wav")
-			printMessage("열렸다.")
-		})
-	}
-}
-
-chemistry.arrow = new Object(chemistry, 'arrow', '화살표.png')
-chemistry.arrow.resize(50)
-chemistry.arrow.locate(500,680)
-
-chemistry.arrow.onClick=function(){
-	Game.move(aisle)
-}
-
-game.makeCombination(chemistry.beaker3.id,chemistry.getkeycast.id,chemistry.keycast2.id)
-game.makeCombination(chemistry.key.id,chemistry.getkeycast.id,chemistry.keycast2.id)
-
-//tray
-chemistry_tray.tray = new Object(chemistry_tray, 'tray', 'tray1.png')
-chemistry_tray.tray.resize(500)
-chemistry_tray.tray.locate(680,380)
-
-chemistry_tray.password = new Object(chemistry_tray, 'password', 'password.png')
-chemistry_tray.password.resize(300)
-chemistry_tray.password.locate(670,380)
-chemistry_tray.password.hide()
-
-chemistry_tray.tray.onClick = function(){
-	if(chemistry.getpaper.isHanded()){
-		chemistry_tray.password.show()
-		playSound("water.wav")	
-	}
-}
-
-
-chemistry_tray.arrow = new Object(chemistry_tray, 'arrow', '화살표.png')
-chemistry_tray.arrow.resize(50)
-chemistry_tray.arrow.locate(500,680)
-
-chemistry_tray.arrow.onClick=function(){
-    
-	Game.move(chemistry)
-}
-
-//uv
-chemistry_uv.uv = new Object(chemistry_uv, 'uv', 'uvopen.png')
-chemistry_uv.uv.resize(450)
-chemistry_uv.uv.locate(640,440)
-
-chemistry_uv.arrow = new Object(chemistry_uv, 'arrow', '화살표.png')
-chemistry_uv.arrow.resize(50)
-chemistry_uv.arrow.locate(500,680)
-
-chemistry_uv.arrow.onClick=function(){
-	Game.move(chemistry)
-}
-
-chemistry_uv.switch = new Object(chemistry_uv, 'switch', 'switchoff.png')
-chemistry_uv.switch.resize(28)
-chemistry_uv.switch.locate(567,528)
-chemistry_uv.uv.lock()
-
-chemistry_uv.switch.onClick=function(){
-	if(chemistry_uv.uv.isLocked()){
-		playSound("switch.wav")
-		chemistry_uv.uv.open()
-	}else if(chemistry_uv.uv.isOpened()){
-		playSound("switch.wav")
-		chemistry_uv.uv.lock()
-	}
-}
-
-chemistry_uv.uv.onOpen=function(){
-	chemistry_uv.switch.setSprite("switchon.png")
-}
-
-chemistry_uv.uv.onLock=function(){
-	chemistry_uv.switch.setSprite("switchoff.png")
-}
-
-//aisle key
-
-aisle.chainright.onClick = function(){
-	if(chemistry.key.isHanded()){
-		aisle.chainright.open()
-		aisle.chain1.show()
-		playSound("chain.wav")
-	}
-}
-
-aisle.chainright.onOpen=function(){
-	aisle.chainright.hide()
-}
+//aisle.doorL = new Door(aisle, '좌측 문', '문-닫힘-1.png', '문-열림-1.png', roomL)   
+//aisle.doorC = new Door(aisle, '중앙 문', '문-닫힘-1.png', '문-열림-1.png', roomC)   
+aisle.doorR = new Door(aisle, 'doorR', '문-닫힘-1.png', '문-열림-1.png', roomR)
+aisle.doorR.resize(300)
+aisle.doorR.locate(900,400)
 
  
 
-////////////////////////////////////Physics///////////////////////////////////
 
+/*
+////////////////////////////Left Room(화학실험실)//////////////////////////////
+roomL_F = game.createRoom("좌측 방", null)
+roomL_L = game.createRoom("좌측 방", null)
+roomL_B = game.createRoom("좌측 방", null)
+roomL_R = game.createRoom("좌측 방", null)
+
+//왼쪽방(Left) 정면(Front) = L_F
+roomL_F.arrowL = new Arrow(roomL_F, 'Left Arrow', '화살표1.jpg', LEFT)
+roomL_F.arrowR = new Arrow(roomL_F, 'Right Arrow', '화살표3.jpg', RIGHT)
+roomL_F.arrowL.onClick = function(){Game.move(roomL_L)}
+roomL_F.arrowR.onClick = function(){Game.move(roomL_R)}
+
+//왼쪽방(Left) 좌측(Left) = L_L
+roomL_L.arrowL = new Arrow(roomL_L, 'Left Arrow', '화살표1.jpg', LEFT)
+roomL_L.arrowR = new Arrow(roomL_L, 'Right Arrow', '화살표3.jpg', RIGHT)
+roomL_L.arrowL.onClick = function(){Game.move(roomL_B)}
+roomL_L.arrowR.onClick = function(){Game.move(roomL_F)}
+
+//왼쪽방(Left) 후측(Back) = L_B
+roomL_B.arrowL = new Arrow(roomL_B, 'Left Arrow', '화살표1.jpg', LEFT)
+roomL_B.arrowR = new Arrow(roomL_B, 'Right Arrow', '화살표3.jpg', RIGHT)
+roomL_B.arrowL.onClick = function(){Game.move(roomL_R)}
+roomL_B.arrowR.onClick = function(){Game.move(roomL_L)}
+
+//왼쪽방(Left) 우측(Right) = L_R
+roomL_R.arrowL = new Arrow(roomL_R, 'Left Arrow', '화살표1.jpg', LEFT)
+roomL_R.arrowR = new Arrow(roomL_R, 'Right Arrow', '화살표3.jpg', RIGHT)
+roomL_R.arrowL.onClick = function(){Game.move(roomL_F)}
+roomL_R.arrowR.onClick = function(){Game.move(roomL_B)}
+
+//통로와 좌측 방 사이에 위치한 문(==doorL, 통로 기준 좌측 문)
+roomL_B.doorL = roomL_B.createObject("좌측 문", null)
+roomL_B.doorL.onClick = function(){game.move(aisle)}
+ 
+
+*/
+
+
+
+
+////////////////////////////Right Room(물리실험실)//////////////////////////////
 //배수관 클로즈업 방, 전구 클로즈업 방, 금고 클로즈업 방
 drain_close = new Room('drain_close', '물리방-2.png')
 light_bulb_close = new Room('light_bulb_close','전구방-1.png')
@@ -1146,10 +840,60 @@ safe_close.dial.onClick = function(){
 
 
 
-//////////////////////////////비밀의 방////////////////////////////////
+
+
+/*
+////////////////////////////Center Room(비밀의 방)//////////////////////////////
+roomC_F = game.createRoom("중앙 방", null)
+roomC_L = game.createRoom("중앙 방", null)
+roomC_B = game.createRoom("중앙 방", null)
+roomC_R = game.createRoom("중앙 방", null)
+
+//중앙방(Center) 정면(Front) = C_F
+roomC_F.arrowL = new Arrow(roomC_F, 'Left Arrow', '화살표1.jpg', LEFT)
+roomC_F.arrowR = new Arrow(roomC_F, 'Right Arrow', '화살표3.jpg', RIGHT)
+roomC_F.arrowL.onClick = function(){Game.move(roomC_L)}
+roomC_F.arrowR.onClick = function(){Game.move(roomC_R)}
+
+//중앙방(Center) 좌측(Left) = C_L
+roomC_L.arrowL = new Arrow(roomC_L, 'Left Arrow', '화살표1.jpg', LEFT)
+roomC_L.arrowR = new Arrow(roomC_L, 'Right Arrow', '화살표3.jpg', RIGHT)
+roomC_L.arrowL.onClick = function(){Game.move(roomC_B)}
+roomC_L.arrowR.onClick = function(){Game.move(roomC_F)}
+
+//중앙방(Center) 후측(Back) = C_B
+roomC_B.arrowL = new Arrow(roomC_B, 'Left Arrow', '화살표1.jpg', LEFT)
+roomC_B.arrowR = new Arrow(roomC_B, 'Right Arrow', '화살표3.jpg', RIGHT)
+roomC_B.arrowL.onClick = function(){Game.move(roomC_R)}
+roomC_B.arrowR.onClick = function(){Game.move(roomC_L)}
+
+//중앙방(Center) 우측(Right) = C_R
+roomC_R.arrowL = new Arrow(roomC_R, 'Left Arrow', '화살표1.jpg', LEFT)
+roomC_R.arrowR = new Arrow(roomC_R, 'Right Arrow', '화살표3.jpg', RIGHT)
+roomC_R.arrowL.onClick = function(){Game.move(roomC_F)}
+roomC_R.arrowR.onClick = function(){Game.move(roomC_B)}
+ 
+//통로와 중앙 방 사이에 위치한 문(==doorC)
+roomC_B.doorC = roomC_B.createObject("중앙 문", null)
+roomC_B.doorC.onClick = function(){
+    game.move(aisle)
+}
+
+//탈출 문
+roomC_F.finalDoor = roomC_F.createObject("탈출 문", null)
+roomC_F.finalDoor.lock()
+
+roomC_F.finalDoor.onClick = function() {
+	if(roomC_F.finalDoor.isClosed()){ 
+		roomC_F.finalDoor.open()
+	} else if (roomC_F.finalDoor.isOpened()){ 
+		game.clear()
+	} else if(roomC_F.finalDoor.isLocked()){
+		printMessage("문이 잠겨있다.")
+	}
+}
+*/
 
 
 
-
-
-Game.start(mainRoom, "시작")
+Game.start(roomR, "괴짜 과학자에게 잡혔다....    빨리 이곳을 벗어나야 겠어!!!") 
