@@ -377,8 +377,7 @@ Drain2.member('Reset', function(){
 
 
 
-//------------------------Bulb-------------------------
- 
+//-----------------------------Bulb----------------------------
 function Bulb(room, name, image0, image1, image2, image3, image4, num){
 	Object.call(this, room, name, image0)
 
@@ -421,6 +420,108 @@ Bulb.member('Reset', function(){
 	this.count = 0
 	this.setSprite(this.image0)
 })
+
+
+//------------------------------Safe---------------------------
+function Safe(room, name, image0, image1, image2, image3, answer_array){
+	Object.call(this, room, name, image0)
+
+	// Safe properties
+	this.image0 = image0
+	this.image1 = image1
+	this.image2 = image2
+	this.image3 = image3
+
+	this.current = 0     //다이얼 현재 방향 (0,1,2,3)
+
+	this.safe_array = new Array()  //사용자의 클릭 배열
+	this.answer_array = answer_array   //정답 배열
+}
+Safe.prototype = new Object()   // inherited from Object
+
+//화살표에 클릭에 따라 이미지 변화 + 사용자 클릭 배열에 저장 함수
+Safe.member('Change', function(arrow){  //매개변수는 화살표 방향 (-1 == 왼쪽, 1 == 오른쪽)
+	if(arrow == 1){ //arrow = right
+		//배열에 추가
+		this.safe_array.push(1)
+
+		//image change
+		if(this.current == 0){
+			this.setSprite(this.image1)
+			this.current = 1
+		}
+		else if(this.current == 1){
+			this.setSprite(this.image2)
+			this.current = 2
+		}
+		else if(this.current == 2){
+			this.setSprite(this.image3)
+			this.current = 3
+		}
+		else if(this.current == 3){
+			this.setSprite(this.image0)
+			this.current = 0
+		}
+	}
+	else if(arrow == -1){ //arrow == left
+		//배열에 추가
+		this.safe_array.push(-1)
+		
+		//image change
+		if(this.current == 0){
+			this.setSprite(this.image3)
+			this.current = 3
+		}
+		else if(this.current == 1){
+			this.setSprite(this.image0)
+			this.current = 0
+		}
+		else if(this.current == 2){
+			this.setSprite(this.image1)
+			this.current = 1
+		}
+		else if(this.current == 3){
+			this.setSprite(this.image2)
+			this.current = 2
+		}
+	}
+})
+
+//---정답 배열과 사용자 배열 비교 함수-----  
+Safe.member('Compare', function(array1, array2){
+	var i, isA1, isA2
+	isA1 = Array.isArray(array1)
+	isA2 = Array.isArray(array2)  //배열인지 확인
+
+	if(isA1 !== isA2) {    // 매개변수 하나가 배열이 아닌 경우
+		return false    
+	}
+	if (! (isA1 && isA2)) {      // 둘 다 배열이 아닌 경우
+		return array1 === array2
+	}
+
+	if (array1.length != array2.length) { // 배열 길이가 다르면
+		return false;
+	}
+
+	//각 요소 비교
+	for(i = 0; i < array1.length; i ++){
+		if(array1[i] != array2[i]){
+			return false
+		}
+	}
+
+	return true
+})
+
+//리셋 함수
+Safe.member('Reset', function(){
+	this.current = 0
+	this.safe_array = []    //사용자 배열 초기화
+
+	this.setSprite(this.image0)
+})
+
 
 
 
@@ -533,13 +634,13 @@ safe_close = new Room('safe_close', '금고방.png')
 
 //복도로 나가는 화살표
 roomR.arrow = new Door(roomR, 'arrow', '화살표-1.png', '화살표-1.png',aisle)
-roomR.arrow.resize(200)
-roomR.arrow.locate(1150,600)
+roomR.arrow.resize(150)
+roomR.arrow.locate(1000,670)
 
 //배수관 첫화면
 roomR.first_drain = new Object(roomR, 'first_drain', '배수관-첫화면.png')
-roomR.first_drain.resize(300)
-roomR.first_drain.locate(300, 200)
+roomR.first_drain.resize(250)
+roomR.first_drain.locate(250, 260)
 
 roomR.first_drain.onClick = function(){
 	Game.move(drain_close)
@@ -552,8 +653,8 @@ drain_close.drain3 = new Drain1(drain_close, 'drain3', '배수관-2-2.png','배�
 drain_close.drain4 = new Drain1(drain_close, 'drain4', '배수관-2-3.png','배수관-2-1.png','배수관-2-2.png','배수관-2-4.png', 1)
 drain_close.drain5 = new Drain1(drain_close, 'drain5', '배수관-2-1.png','배수관-2-2.png','배수관-2-3.png','배수관-2-4.png', 3)
 drain_close.drain6 = new Drain2(drain_close, 'drain6', '배수관-1-2.png', '배수관-1-1.png', 1)
-drain_close.drain7 = new Drain1(drain_close, 'drain7', '배수관-4-1.png','배수관-4-2.png','배수관-4-3.png','배수관-4-4.png')
-drain_close.drain8 = new Drain1(drain_close, 'drain8', '배수관-4-3.png','배수관-4-2.png','배수관-4-1.png','배수관-4-4.png')
+drain_close.drain7 = new Drain2(drain_close, 'drain7', '배수관-1-1.png', '배수관-1-2.png')
+drain_close.drain8 = new Drain1(drain_close, 'drain8', '배수관-2-1.png','배수관-2-2.png','배수관-2-4.png','배수관-2-3.png')
 drain_close.drain9 = new Drain1(drain_close, 'drain9', '배수관-2-4.png','배수관-2-2.png','배수관-2-3.png','배수관-2-1.png', 3)
 
 drain_close.drain1.resize(100)
@@ -578,21 +679,56 @@ drain_close.drain9.locate(700,300)
 
 drain_close.box = new Object(drain_close, 'box', '투명상자.png')
 drain_close.box.resize(200)
-drain_close.box.locate(900,480)
+drain_close.box.locate(900,465)
+drain_close.box.onClick = function(){
+	printMessage("손이 닿질 않아서 꺼낼 수가 없다!!!")
+}
 
 drain_close.pipe = new Object(drain_close, 'pipe', '파이프-1.png')
 drain_close.pipe.resize(200)
 drain_close.pipe.locate(845,335)
-//*****수돗꼭지 돌리면 물 나오게 하기*****/
-drain_close.pipe.onClick = function(){
+
+drain_close.velve = new Object(drain_close, 'velve', '손잡이.png')
+drain_close.velve.resize(100)
+drain_close.velve.locate(975,320)
+drain_close.velve.lock()
+
+drain_close.velve.onClick = function(){
 	if(drain_close.drain1.clear == 1 && drain_close.drain2.clear == 1 && drain_close.drain3.clear == 1 && drain_close.drain4.clear == 1 && drain_close.drain5.clear == 1 && drain_close.drain6.clear == 1 && drain_close.drain9.clear == 1){
-		//***물 흘러가는 소리 */
-		drain_close.box.setSprite('물상자.png')
-		drain_close.lever.show()
+		if(drain_close.velve.isLocked()){
+			//***물 흘러가는 소리 */
+			drain_close.box.setSprite('물상자.png')
+			drain_close.box.onClick = function(){}
+			drain_close.lever.show()
+		}
+		else if(drain_close.velve.isOpened()){}
 	}
 	else{
-		printMessage("손이 닿질 않아서 꺼낼 수가 없다!!!")
+		drain_close.drain1.Reset()
+		drain_close.drain2.Reset()
+		drain_close.drain3.Reset()
+		drain_close.drain4.Reset()
+		drain_close.drain5.Reset()
+		drain_close.drain6.Reset()
+		drain_close.drain7.Reset()
+		drain_close.drain8.Reset()
+		drain_close.drain9.Reset()
+
 	}
+
+	if(drain_close.velve.isLocked()){
+		drain_close.velve.open()
+	}
+	else if(drain_close.velve.isOpened()){
+		drain_close.velve.lock()
+	}
+}
+
+drain_close.velve.onOpen = function(){
+	drain_close.velve.setSprite('손잡이-2.png')
+}
+drain_close.velve.onLock = function(){
+	drain_close.velve.setSprite('손잡이.png')
 }
 
 drain_close.lever = new Item(drain_close, 'lever', '레버.png')
@@ -621,10 +757,11 @@ drain_close.arrow.onClick = function(){
 }
 
 
+
 //전구기계
 roomR.bulb_mach = new Object(roomR, 'bulb_mach', '전구기계-1.png')
-roomR.bulb_mach.resize(200)
-roomR.bulb_mach.locate(1000, 400)
+roomR.bulb_mach.resize(230)
+roomR.bulb_mach.locate(1000, 425)
 roomR.bulb_mach.onClick = function(){
 	if(drain_close.lever.isHanded()){
 		//**덜컥 소리내기 */
@@ -672,19 +809,65 @@ nolight_bulb_close.arrow.onClick = function(){
 //사물함
 roomR.safe = new Object(roomR, 'safe', '금고-닫힘.png')
 roomR.safe.resize(200)
-roomR.safe.locate(300, 500)
-
+roomR.safe.locate(300, 550)
 roomR.safe.onClick = function(){
 	Game.move(safe_close)
 }
 
-//사물함 클로즈업
+//열쇠
+roomR.key = new Item(roomR, 'key', '열쇠-물리방.png')
+roomR.key.resize(50)
+roomR.key.locate(300,500)
+roomR.key.hide()
+
+//사물함 클로즈업 방
 safe_close.arrow = new Object(safe_close, 'arrow', '화살표-2.png')
 safe_close.arrow.resize(200)
 safe_close.arrow.locate(650, 650)
 safe_close.arrow.onClick = function(){
 	Game.move(roomR)
 }
+
+//사물함 다이얼
+safe_close.dial = new Safe(safe_close, 'dial', '다이얼-1.png', '다이얼-2.png', '다이얼-3.png', '다이얼-4.png', new Array(1,1,1,-1,-1,1,-1,-1,-1))
+safe_close.dial.resize(300)
+safe_close.dial.locate(650, 350)
+
+//사물함 화살표
+safe_close.arrow_right = new Object(safe_close, 'arrow_right', '화살표-오른쪽회전.png')
+safe_close.arrow_right.resize(100)
+safe_close.arrow_right.locate(900, 350)
+safe_close.arrow_right.onClick = function(){
+	safe_close.dial.Change(1)
+}
+
+safe_close.arrow_left = new Object(safe_close, 'arrow_left', '화살표-왼쪽회전.png')
+safe_close.arrow_left.resize(100)
+safe_close.arrow_left.locate(400, 350)
+safe_close.arrow_left.onClick = function(){
+	safe_close.dial.Change(-1)
+}
+
+//사물함 정답 누르기
+safe_close.dial.onClick = function(){
+	if(safe_close.dial.Compare(safe_close.dial.answer_array, safe_close.dial.safe_array)){
+		//달칵 소리~~
+		roomR.safe.setSprite('금고-열림.png')
+		roomR.safe.onClick = function(){
+			printMessage("이미 열림")
+		}
+		roomR.key.show()
+		Game.move(roomR)
+	}
+	else{
+		printMessage("땡~~~")
+	}
+	safe_close.dial.Reset()
+}
+
+
+
+
 
 
 
@@ -742,4 +925,4 @@ roomC_F.finalDoor.onClick = function() {
 
 
 
-Game.start(mainRoom, "괴짜 과학자에게 잡혔다....    빨리 이곳을 벗어나야 겠어!!!") 
+Game.start(roomR, "괴짜 과학자에게 잡혔다....    빨리 이곳을 벗어나야 겠어!!!") 
