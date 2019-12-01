@@ -1000,32 +1000,27 @@ drain_close.velve.locate(975,320)
 drain_close.velve.lock()
 
 drain_close.velve.onClick = function(){
-	if(drain_close.drain1.clear == 1 && drain_close.drain2.clear == 1 && drain_close.drain3.clear == 1 && drain_close.drain4.clear == 1 && drain_close.drain5.clear == 1 && drain_close.drain6.clear == 1 && drain_close.drain9.clear == 1){
-		if(drain_close.velve.isLocked()){
-			playSound('drain.wav')
+	if(drain_close.velve.isLocked()){
+		playSound('bump.wav')
+		drain_close.velve.open()
+
+		if(drain_close.drain1.clear == 1 && drain_close.drain2.clear == 1 && drain_close.drain3.clear == 1 && drain_close.drain4.clear == 1 && drain_close.drain5.clear == 1 && drain_close.drain6.clear == 1 && drain_close.drain9.clear == 1){
+			playSound('drain.wav')  //물소리
 			drain_close.box.setSprite('물상자.png')
 			drain_close.lever.show()
 		}
-		else if(drain_close.velve.isOpened()){}
-	}
-	else{
-		drain_close.drain1.Reset()
-		drain_close.drain2.Reset()
-		drain_close.drain3.Reset()
-		drain_close.drain4.Reset()
-		drain_close.drain5.Reset()
-		drain_close.drain6.Reset()
-		drain_close.drain7.Reset()
-		drain_close.drain8.Reset()
-		drain_close.drain9.Reset()
-
-	}
-
-	if(drain_close.velve.isLocked()){
-		drain_close.box.onClick = function(){
-			playSound('bump.wav')
+		else{
+			drain_close.drain1.Reset()
+			drain_close.drain2.Reset()
+			drain_close.drain3.Reset()
+			drain_close.drain4.Reset()
+			drain_close.drain5.Reset()
+			drain_close.drain6.Reset()
+			drain_close.drain7.Reset()
+			drain_close.drain8.Reset()
+			drain_close.drain9.Reset()
+	
 		}
-		drain_close.velve.open()
 	}
 	else if(drain_close.velve.isOpened()){
 		playSound('locked.wav')
@@ -1051,7 +1046,7 @@ drain_close.arrow.resize(200)
 drain_close.arrow.locate(600, 650)
 
 drain_close.arrow.onClick = function(){
-	//배수관 게임 리셋(***뺄지 고민중***)
+	//배수관 게임 리셋
 	drain_close.drain1.Reset()
 	drain_close.drain2.Reset()
 	drain_close.drain3.Reset()
@@ -1073,7 +1068,6 @@ physics.bulb_mach.resize(230)
 physics.bulb_mach.locate(1000, 425)
 physics.bulb_mach.onClick = function(){
 	if(drain_close.lever.isHanded()){
-		//**덜컥 소리내기 */
 		physics.bulb_mach.setSprite('전구기계-2.png')
 		Game.move(light_bulb_close)
 	}
@@ -1093,6 +1087,7 @@ light_bulb_close.lever.locate(550, 600)
 light_bulb_close.lever.resize(300)
 light_bulb_close.lever.onClick = function(){
 	light_bulb_close.bulb.Change() //전구 이미지 변화
+	playSound('beep.wav')         
 }
 
 light_bulb_close.arrow = new Object(light_bulb_close, 'arrow', '화살표-2.png')
