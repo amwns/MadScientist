@@ -574,7 +574,6 @@ mainRoom = new Room('mainRoom', 'mainRoom.png')
 aisle = new Room('aisle', 'aisle.png')   
 physics = new Room('physics', '물리방-1.png')
 chemistry = new Room('chemistry', 'chemical.png')
-chemistry_uv = new Room('chemistry_uv','chemistry_uv.png')
 chemistry_tray = new Room('chemistry_tray','chemistry_tray.png')
 topsecret = new Room('topsecret','topSecret.png')
 
@@ -724,6 +723,7 @@ aisle.rightdoor.locate(1050, 335)
 aisle.middledoor = new Door1(aisle, 'middledoor', 'middledoor.png', 'middledooropen.png', topsecret,'door.wav')
 aisle.middledoor.resize(440)
 aisle.middledoor.locate(650, 335)
+aisle.middledoor.lock()
 
 aisle.leftdoor = new Door1(aisle, 'leftdoor', 'leftdoor.png', 'leftdooropen.png',chemistry,'door.wav')
 aisle.leftdoor.resize(220)
@@ -792,9 +792,7 @@ chemistry.uv = new Object(chemistry, 'uv', 'uv.png')
 chemistry.uv.resize(130)
 chemistry.uv.locate(1030,350)
 
-chemistry.uv.onClick=function(){
-	Game.move(chemistry_uv)
-}
+
 
 chemistry.tray = new Object(chemistry, 'tray', 'tray.png')
 chemistry.tray.resize(160)
@@ -889,41 +887,7 @@ chemistry_tray.arrow.onClick=function(){
 	Game.move(chemistry)
 }
 
-//uv
-chemistry_uv.uv = new Object(chemistry_uv, 'uv', 'uvopen.png')
-chemistry_uv.uv.resize(450)
-chemistry_uv.uv.locate(640,440)
 
-chemistry_uv.arrow = new Object(chemistry_uv, 'arrow', '화살표.png')
-chemistry_uv.arrow.resize(50)
-chemistry_uv.arrow.locate(500,680)
-
-chemistry_uv.arrow.onClick=function(){
-	Game.move(chemistry)
-}
-
-chemistry_uv.switch = new Object(chemistry_uv, 'switch', 'switchoff.png')
-chemistry_uv.switch.resize(28)
-chemistry_uv.switch.locate(567,528)
-chemistry_uv.uv.lock()
-
-chemistry_uv.switch.onClick=function(){
-	if(chemistry_uv.uv.isLocked()){
-		playSound("switch.wav")
-		chemistry_uv.uv.open()
-	}else if(chemistry_uv.uv.isOpened()){
-		playSound("switch.wav")
-		chemistry_uv.uv.lock()
-	}
-}
-
-chemistry_uv.uv.onOpen=function(){
-	chemistry_uv.switch.setSprite("switchon.png")
-}
-
-chemistry_uv.uv.onLock=function(){
-	chemistry_uv.switch.setSprite("switchoff.png")
-}
 
 
 ////////////////////////////////////Physics///////////////////////////////////
@@ -1193,6 +1157,7 @@ aisle.chainleft.onClick = function(){
 		aisle.chainleft.hide()
 		aisle.chain2.show()
 		playSound("chain.wav")
+		aisle.middledoor.unlock()
 	}
 	else if(chemistry.key.isHanded()){
 		printMessage("이 열쇠는 안 맞는거 같다. 물리실험실에서 얻은 열쇠를 사용해보자")
@@ -1210,15 +1175,24 @@ aisle.chainleft.onClick = function(){
 cage = new Room('cage', 'cage.png')
 
 cage.hint = new Object(cage, 'hint', 'hint.png')
-cage.hint.resize(100)
-cage.hint.locate(600,500)
+cage.hint.resize(500)
+cage.hint.locate(750,200)
 cage.hint.onClick = function(){
 	showImageViewer("hint.png","")
+}
+
+cage.arrow=new Object(cage,'arrow','화살표.png')
+cage.arrow.resize(50)
+cage.arrow.locate(500,680)
+
+cage.arrow.onClick=function(){
+	Game.move(topsecret)
 }
 //몬스터
 topsecret.monster = new Object(topsecret, 'monster', 'monster.png')
 topsecret.monster.resize(200)
 topsecret.monster.locate(850,340)
+topsecret.monster.lock()
 
 //감옥
 topsecret.cage = new Door(topsecret, 'cage', 'cageclose.png','cageopen.png',cage)
@@ -1230,13 +1204,25 @@ topsecret.cagekey = new getItem(topsecret, 'cagekey', 'cagekey.png','key.wav')
 topsecret.cagekey.locate(300,600)
 topsecret.cagekey.resize(80)
 
-topsecret.monster.onClick = function(){
-    if(Game.handItem() == topsecret.tranquilizer.id){
-        topsecret.monster.setSprite('dead_monster.png')
-        topsecret.cage.unlock()
-    }
+topsecret.cage.onClick = function(){
+    if(topsecret.tranquilizer.isHanded()&&topsecret.monster.isLocked()&&topsecret.cage.isLocked()){
+		playSound('monster_dead_sound.wav')
+		topsecret.monster.setSprite('dead_monster.png')
+		topsecret.monster.open()
+		printMessage('몬스터를 해치웠다..')
+	}else if(topsecret.tranquilizer.isHanded()&&topsecret.monster.isOpened()&&topsecret.cage.isLocked()){
+		printMessage('이제 문을 열수 있을거 같아')
+	}
+	else if(topsecret.cagekey.isHanded()&&topsecret.monster.isOpened()&&topsecret.cage.isLocked()){
+		topsecret.cage.open()
+		playSound('prison_open.wav')
+	}
+	else if(topsecret.monster.isOpened()&&topsecret.cage.isOpened()){
+		Game.move(cage)
+	}
     else{
-        playSound('monster.wav')
+		printMessage('뒤에 무언가 적혀있는거 같은데 몬스터 때문에 다가가지를 못하겟어')
+        playSound('monsteractive.wav')
     }
 }
 
@@ -1247,39 +1233,58 @@ topsecret.injection.hide()
 topsecret.tranquilizer = new Item(topsecret, 'tranquilizer', 'tranquilizer.png')  //마취 주사총
 topsecret.tranquilizer.hide()
 
-topsecret.pipe = new getItem(topsecret, 'pipe', 'pipe.png','bump.wav')
-topsecret.pipe.locate(1230,600)
-topsecret.pipe.resize(80)
+topsecret.pipe1 = new getItem(topsecret, 'pipe1', 'pipe.png','stone.wav')
+topsecret.pipe1.locate(1230,600)
+topsecret.pipe1.resize(80)
 
 //서랍
 topsecret.drawer = new Object(topsecret, 'drawer', 'drawer.png')
 topsecret.drawer.resize(250)
 topsecret.drawer.locate(180, 380)
 
-topsecret.niddle = new getItem(topsecret, 'niddle', 'niddle.png','bump.wav')  //빈주사기
+topsecret.niddle = new getItem(topsecret, 'niddle', 'niddle.png','pick.wav')  //빈주사기
 topsecret.niddle.locate(128,445)
 topsecret.niddle.resize(45)
 topsecret.niddle.hide()
 
-topsecret.drug = new getItem(topsecret, 'drug', 'drug.png','bump.wav')   //마취약
+topsecret.drug = new getItem(topsecret, 'drug', 'drug.png','pick.wav')   //마취약
 topsecret.drug.locate(145,440)
 topsecret.drug.resize(18)
 topsecret.drug.hide()
 
 
 topsecret.drawer.onClick = function(){
+	playSound('drawer.wav')
 	topsecret.drawer.setSprite('draweropen.png')
 	topsecret.niddle.show()
 	topsecret.drug.show()
 }
 
 //문
-topsecret.door = new Door(topsecret, 'door', 'lastdoor.png', 'lastdooropen.png')
+topsecret.door = new Object(topsecret, 'door', 'lastdoor.png')
 topsecret.door.resize(380)
 topsecret.door.locate(500, 280)
+topsecret.door.lock()
+
+topsecret.door.onClick=function(){
+	if(topsecret.door.isLocked()){
+		playSound('beep.wav')
+		printMessage("비밀번호를 입력하세요.")
+		showKeypad("telephone", "324756" , function(){
+			topsecret.door.setSprite('lastdooropen.png')
+			topsecret.door.open()
+			playSound('prison_open.wav')
+			Game.move(topsecret)
+		 })
+	}
+	else if(topsecret.door.isOpened()){
+		Game.end()
+	}
+}
+
 
 game.makeCombination(topsecret.niddle.id, topsecret.drug.id, topsecret.injection.id)  //빈주사기 + 마취약 = 마취 주사
-game.makeCombination(topsecret.pipe.id, topsecret.injection.id, topsecret.tranquilizer.id)  //파이프 + 마취 주사 = 마취 주사 총
+game.makeCombination(topsecret.pipe1.id, topsecret.injection.id, topsecret.tranquilizer.id)  //파이프 + 마취 주사 = 마취 주사 총
 
 
-Game.start(drain_close, "시작")
+Game.start(mainroom, "시작")
