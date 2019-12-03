@@ -183,7 +183,7 @@ Door.member('onClose', function(){
 	this.id.setSprite(this.closedImage)
 })
 
-//door 생성
+//door와 sound 재생 생성
 function Door1(room, name, closedImage, openedImage, connectedTo,sound){
 	Object.call(this, room, name, closedImage)  
 
@@ -921,12 +921,6 @@ chemistry_uv.switch.resize(28)
 chemistry_uv.switch.locate(567,528)
 chemistry_uv.switch.lock()
 
-chemistry_uv.uv.onClick=function(){
-	if(chemistry.key2.isHanded()&&chemistry_uv.uv.isClosed()&&chemistry_uv.key2.isLocked()){
-		chemistry_uv.uv.open()
-		chemistry_uv.key2.show()
-	}
-}
 chemistry_uv.key= new getItem(chemistry_uv,'key','key.png','key.wav')
 chemistry_uv.key.resize(100)
 chemistry_uv.key.locate(600,400)
@@ -938,6 +932,13 @@ chemistry_uv.key2.resize(100)
 chemistry_uv.key2.locate(600,400)
 chemistry_uv.key2.hide()
 chemistry_uv.key2.lock()
+
+chemistry_uv.uv.onClick=function(){
+	if(chemistry.key2.isHanded()&&chemistry_uv.uv.isClosed()&&chemistry_uv.key2.isLocked()){
+		chemistry_uv.uv.open()
+		chemistry_uv.key2.show()
+	}
+}
 
 chemistry_uv.switch.onClick=function(){
 	if(chemistry_uv.switch.isLocked()&&chemistry_uv.uv.isClosed()){
@@ -1339,7 +1340,7 @@ topsecret.cage.onClick = function(){
 		Game.move(cage)
 	}
     else{
-		printMessage('뒤에 무언가 적혀있는거 같은데 몬스터 때문에 다가가지를 못하겟다... 파이프를 이용해 몬스터를 해치워야겟다')
+		printMessage('뒤에 무언가 적혀있는거 같은데 몬스터 때문에 다가가지를 못하겟다... 마취파이프를 이용해 몬스터를 해치워야겟다')
         playSound('monsteractive.wav')
     }
 }
