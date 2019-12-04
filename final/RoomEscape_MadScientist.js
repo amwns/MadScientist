@@ -934,7 +934,7 @@ chemistry_uv.key2.hide()
 chemistry_uv.key2.lock()
 
 chemistry_uv.uv.onClick=function(){
-	if(chemistry.key2.isHanded()&&chemistry_uv.uv.isClosed()&&chemistry_uv.key2.isLocked()){
+	if(chemistry.key2.isHanded()&&chemistry_uv.uv.isClosed()&&chemistry_uv.switch.isLocked()&&chemistry_uv.key2.isLocked()){
 		chemistry_uv.uv.open()
 		chemistry_uv.key2.show()
 	}
